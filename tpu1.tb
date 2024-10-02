@@ -1,0 +1,65 @@
+module test_TPU();
+    reg clk;
+    reg reset;
+    reg [15:0] a, b;
+    reg [15:0] mean, variance, scale, shift;
+    reg dropout_enable;
+    wire [15:0] relu_out, tanh_out, sigmoid_out, softmax_out, bn_out;
+
+    // Instantiate TPU module
+    TPU uut (
+        .clk(clk),
+        .reset(reset),
+        .a(a),
+        .b(b),
+        .mean(mean),
+        .variance(variance),
+        .scale(scale),
+        .shift(shift),
+        .dropout_enable(dropout_enable),
+        .relu_out(relu_out),
+        .tanh_out(tanh_out),
+        .sigmoid_out(sigmoid_out),
+        .softmax_out(softmax_out),
+        .bn_out(bn_out)
+    );
+
+    // Clock generation
+    always #5 clk = ~clk;
+
+    // Test procedure
+    initial begin
+        // Initialize
+        clk = 0;
+        reset = 1;
+        mean = 16'd1000;
+        variance = 16'd500;
+        scale = 16'd2;
+        shift = 16'd10;
+        dropout_enable = 0;
+        #10 reset = 0;
+
+        // Test case 1: Basic operation with dropout disabled
+        a = 16'd10; b = 16'd20;
+        #10;
+        $display("ReLU: %d, Tanh: %d, Sigmoid: %d, Softmax: %d, BatchNorm: %d", relu_out, tanh_out, sigmoid_out, softmax_out, bn_out);
+
+        // Test case 2: Different inputs with dropout disabled
+        a = -16'd10; b = 16'd30;
+        #10;
+        $display("ReLU: %d, Tanh: %d, Sigmoid: %d, Softmax: %d, BatchNorm: %d", relu_out, tanh_out, sigmoid_out, softmax_out, bn_out);
+
+        // Test case 3: Dropout enabled
+        dropout_enable = 1;
+        a = 16'd1000; b = 16'd1000;
+        #10;
+        $display("ReLU: %d, Tanh: %d, Sigmoid: %d, Softmax: %d, BatchNorm: %d", relu_out, tanh_out, sigmoid_out, softmax_out, bn_out);
+
+        // Test case 4: Dropout enabled with negative inputs
+        a = -16'd500; b = -16'd500;
+        #10;
+        $display("ReLU: %d, Tanh: %d, Sigmoid: %d, Softmax: %d, BatchNorm: %d", relu_out, tanh_out, sigmoid_out, softmax_out, bn_out);
+
+        $finish;
+    end
+endmodule
